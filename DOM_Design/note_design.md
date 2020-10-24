@@ -55,4 +55,3 @@
    - node.nodeValue，返回**文本节点**的值，即node一定要是文本节点，一般用.childNodes[xx]获取元素节点的“文本节点子元素”
    - firstChild等价于 childNodes[0]，lastChild等价于childNodes[node.childNodes.length - 1]
    - element.nodeName：返回**元素节点**的大写值，如P、IMG等
-
