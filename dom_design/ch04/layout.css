@@ -1,0 +1,40 @@
+body {
+    font-family: "Arial";
+    color: #333;
+    background-color: #ccc;
+    margin: 1em 10%;
+}
+
+hi {
+    color: #333;
+    background-color: transparent;
+}
+
+a {
+    color: #c60;
+    background-color: transparent;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+ul {
+    padding: 0;
+}
+
+#imageGallery {
+    list-style: none;
+}
+
+#imageGallery li{
+    padding: 0.2em;
+    list-style: none;
+    display: inline;
+}
+
+#imageGallery li a img {
+    border: 0;
+}
+
+body > img {
+    margin: 0;
+}
