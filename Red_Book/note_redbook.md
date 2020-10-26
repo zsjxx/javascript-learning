@@ -461,7 +461,7 @@
 
     实验结果
 
-    ![dad.html](C:\Users\HP\Desktop\frontend\figure\check_array.jpg)
+    ![dad.html](..\figure\check_array.jpg)
 
 16. Array——toString()、valueOf()以及join()
 
@@ -661,7 +661,7 @@
       console.log(arr); // [ 1, 2, 3, 4 ]
       ```
 
-      ![reduce](C:\Users\HP\Desktop\frontend\figure\reduce.jpg)
+      ![reduce](..\figure\reduce.jpg)
 
     - 有初始值
 
