@@ -49,9 +49,64 @@
      3）getElementByClassName：返回具有相同类名的对象数组，**必须是对象来调用**
 
    - 获取属性的方法：object.getAttribute()，**只能用于元素节点**
+   
    - 设置属性的方法：object.setAttribute()，**只能用于元素节点**
+   
    - element.childNodes，返回全部子元素的数组（不仅是元素节点，所以这个数可能很大）
+   
    - element.nodeType，1对应元素节点，2对应属性节点，3对应文本节点
+   
    - node.nodeValue，返回**文本节点**的值，即node一定要是文本节点，一般用.childNodes[xx]获取元素节点的“文本节点子元素”
+   
    - firstChild等价于 childNodes[0]，lastChild等价于childNodes[node.childNodes.length - 1]
+   
    - element.nodeName：返回**元素节点**的大写值，如P、IMG等
+   
+   - element.parentNode：返回element的父元素节点
+   
+   - element.nextSibling：返回element元素的下一个元素节点，如果没有就返回null
+
+3. 动态创建标记
+
+   - element.innerHTML，没有括号，返回元素节点旗下的HTML代码，可以返回或修改。
+
+   - 创建元素节点：document.createElement()
+
+   - 创建文本节点：document.createTextNode()
+
+   - 为元素添加一个子节点（元素/文本）：element.appendChild()
+
+   - 在某个元素节点之前插入元素：parentElement.insertBefore(newElement, targetElement)
+
+   - 在某个元素节点之后插入元素，没有，得自己写，调用形式为insertAfter(newElement, targetElement)
+
+     ```javascript
+     // insert element node after targetElement
+     function insertAfter(newElement, targetElement) {
+         var parent = targetElement.parentNode;
+         if (parent.lastNode == targetElement) {
+             parent.appendChild(newElement);
+         }
+         else {
+             parent.insertBefore(newElement, targetElement.nextSibing);
+         }
+     }
+     ```
+
+   - 自定义addLoadEvent函数，确保页面加载完毕时存在多个函数的情况，有序加载
+
+     ```javascript
+     function addLoadEvent(func) {
+         var oldOnload = window.onload;
+         if (typeof window.onload != "function") {
+             window.onload = func;
+         } else {
+             window.onload = function() {
+                 oldOnload();
+                 func();
+             }
+         }
+     }
+     ```
+
+     
