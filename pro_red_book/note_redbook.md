@@ -10,7 +10,7 @@
 
    4）number
 
-   5）string
+   5）string（只读）
 
    复杂数据类型：object
 
@@ -704,4 +704,397 @@
       console.log(ob.name, ob.age); // "zsj", 23
       ```
 
+    
+    - 在使用**变量**来访问属性时，**只能使用方括号**。
+    
+      ```javascript
+      var ob = {};
+      ob.name = "zsj";
+      var myName = "name";
+      console.log(ob.myName); // undefined
+      console.log(ob[myName]); // "zsj"
+      ```
+    
+24. Date对象，用到再查
+
+    ```javascript
+    // obtaining current time automatically
+    var now = new Date();
+    console.log(now); // 2020-10-27T06:07:42.647Z
+    console.log(typeof now); // object
+    
+    // return the millisecond from 1970 up to now
+    var now = Date.now();
+    console.log(now); // 1603778959702
+    
+    // set the specific date
+    var someDate1 = new Date("5/26/1997");
+    console.log(someDate1); // 1997-05-25T16:00:00.000Z
+    var someDate2 = new Date("May 27, 1997");
+    console.log(someDate2); // 1997-05-25T16:00:00.000Z
+    
+    // invoke valueOf() method when comparing
+    console.log(someDate1 < someDate2); // true
+    ```
+
+25. Function对象
+
+    - 函数声明和函数表达式只有**唯一一点区别**，即函数声明会在解释器执行任何代码之前率先读取，所以函数声明的位置可以任意，而函数表达式不行，要考虑执行的顺序。
+
+    - 函数是对象，所以函数之间的赋值都是指针指来指去。
+
+      ```javascript
+      function sum(a, b) {
+          return a + b;
+      }
       
+      sum2 = sum;
+      sum2 = null;
+      console.log(sum(1, 2)); // 3
+      ```
+
+      Object类型也是，两个变量的赋值仅仅说明两个指针指向同一内存，让其中一个变成null并不会影响内存中的值，置null的**唯一目的**是让GC识别出将要被回收的对象。但是，我们如果影响了内存中的值，其他变量也会受到影响。
+
+      ```javascript
+      // understanding the copy machanism thoroughly
+      var ob1 = {name: "zsj"};
+      ob2 = ob1;
+      ob2 = null;
+      console.log(ob1.name); // zsj
+      ob2 = ob1;
+      ob2.age = 23;
+      console.log(ob1.age); // 23
+      ```
+
+    - 函数可以作为值返回，比如我们想根据对象中的某些属性进行排序。
+
+      ```javascript
+      function compareByPropertyName(propertyName) {
+          return (ob1, ob2) => {
+              if (ob1[propertyName] < ob2[propertyName]) {
+                  return -1;
+              }
+              else if (ob1[propertyName] == ob2[propertyName]) {
+                  return 0;
+              }
+              else {
+                  return 1;
+              }
+          };
+      }
+      
+      var arr = [{name: "zsj", score: 100}, {name: "abc", score: 99}];
+      arr.sort(compareByPropertyName("name"));
+      console.log(arr); // [ { name: 'abc', score: 99 }, { name: 'zsj', score: 100 } ]
+      arr.sort(compareByPropertyName("score"));
+      console.log(arr); // [ { name: 'abc', score: 99 }, { name: 'zsj', score: 100 } ]
+      ```
+
+    - 函数的内部对象（只能在函数的内部调用，函数外部不能用）：this、arguments（含一个**属性**arguments.callee，而不是方法）和caller
+
+      - arguments.callee（**不推荐**，在ES5严格模式下不让用）
+
+        这是个属性，指向拥有这个arguments的函数，但是递归中的函数和不递归的函数持有的**this是不一样的**！看下面的例子！
+
+        ```javascript
+        // The following code should be executed inside browser
+        var global = this;
+        function test(flag) {
+            if (!flag) arguments.callee(true);
+            else console.log(this === global);
+        }
+        test(false); // false
+        test(true); // true
+        ```
+
+        如果换成函数名，就对了。
+
+        ```javascript
+        // The following code should be executed inside browser
+        var global = this;
+        function test(flag) {
+            if (!flag) test(true);
+            else console.log(this === global);
+        }
+        test(false); // true
+        test(true); // true
+        ```
+
+        下面我们来输出一下递归中和没有在递归中的函数对应的this分别是什么
+
+        ```javascript
+        // The following code should be executed inside browser
+        function test(flag) {
+            if (!flag) arguments.callee(true);
+            else console.log(this);
+        }
+        test(false); // [object Arguments], in recursiving stage, the environment becomes the arguments
+        test(true); // [object global]
+        ```
+
+        ![](https://i.loli.net/2020/10/27/CviLA7UY46DmsEq.jpg)
+
+      - caller（ES5严格模式禁用）
+
+        指向调用当前**函数的函数**引用
+
+        ```javascript
+        function fun1() {
+            fun2();
+        }
+        function fun2() {
+            console.log(fun2.caller);
+        }
+        fun1(); // [Function: fun1]
+        ```
+
+    - 函数作为对象，其自身的属性和方法：**length和apply & call & bind**
+
+      - length：返回函数希望接受的命名参数的个数
+
+        ```javascript
+        function fun(a, b) {
+            return a + b;
+        }
+        console.log(fun.length); // 2
+        ```
+
+      - apply：传入两个参数：作用域（必选）和参数（可选，以数组形式）
+
+        ```javascript
+        // The following code should be executed insides browser
+        var color = "red";
+        var ob = {color: "pink"};
+        function showColor() {
+            console.log(this.color);
+        }
+        showColor.apply(this); // "red"
+        showColor.apply(ob); // "pink"
+        ```
+
+        apply和call还可以传参，不过感觉没多大用处。
+
+        ```javascript
+        function add1(...theArgs) {
+            return theArgs.reduce((acc, curValue, index, array) => {
+                return acc + curValue;
+            });
+        }
+        function add2(...theArgs) {
+            return add1.apply(this, theArgs); // only one argument
+        }
+        console.log(add2(1, 2, 3, 4, 5, 6)); // 21
+        ```
+
+      - call，传参的个数可以不限
+
+        ```javascript
+        function add(a, b, c) {
+            console.log(a + b + c);
+        }
+        add.call(this, 1, 2, 3); // 6
+        ```
+
+      - bind：返回函数实例，传入的参数为该函数绑定的执行环境this
+
+        ```javascript
+        function showProperty(propertyName) {
+            console.log(this[propertyName]);
+        }
+        var stu = {name: "zsj"};
+        name = "zzz";
+        showProperty.bind(stu)("name"); // "zsj"
+        ```
+
+26. 基本包装类型——Boolean、Number和String
+
+    需要说明的是，boolean、number和string这三个基本类型都有一个对应的**基本包装类型**，我们应该尽可能**避免**显式地去创建基本包装类型的实例，但是其机制需要了解。当我们调用基本类型的属性或者方法时，实则后台做了以下三件事。
+
+    1）创建对应的基本包装类型实例
+
+    2）在实例上调用相关方法
+
+    3）销毁这个实例
+
+    因为只有对象才有属性和方法，基本类型是没有的，所以之所以你能对基本类型调用属性和方法，就是因为后台偷偷创建了对应的基本包装类型的实例！
+
+    - **转型函数**和**构造函数**：不加new是转型函数，比如用String()对null和undefined进行转型，加new是构造函数。
+
+      ```javascript
+      console.log(typeof Number("23")); // number
+      console.log(typeof new Number("23")); // object
+      console.log(typeof new Number("23").valueOf()); // number
+      ```
+
+    - Number类型
+
+      这里只介绍toString(base)，顺便一提，字符串的valueOf()仍为字符串
+
+      ```javascript
+      var num = 23;
+      console.log(num.toString(8)); // 27
+      console.log(typeof num.toString(8)); // string
+      console.log(typeof num.toString(8).valueOf()); // string
+      ```
+
+    - String类型
+
+      ​	下面所有方法都有返回值，且不修改原字符串
+
+      - charAt(index)，返回的仍为字符串，等效于[]
+
+        ```javascript
+        var str = "abc";
+        console.log(str.charAt(1)); // "b"
+        console.log(typeof str.charAt(1)); // string
+        console.log(str[1]); // "b"
+        ```
+
+      - concat，接收参数为任意项
+
+        ```javascript
+        var str = "abc";
+        console.log(str.concat("d", "e")); // abcde
+        console.log(str); // abc
+        ```
+
+      - slice、substr和substring：slice和数组的一样返回切片，可以为负值；substr和C++一样，为起始下标和长度；substring和slice基本一样，就负值的情况不一样，这里不深究，很少用到。
+
+        ```javascript
+        console.log(str.slice(-3)); // efg
+        console.log(str.substr(4, 3)); //efg
+        console.log(str.substring(4, 5 + 3)); // efg
+        ```
+
+      - indexOf、lastIndexOf
+
+        ```javascript
+        var str = "abcdefg";
+        console.log(str.indexOf("a")); // 0
+        ```
+
+      - trim，等价于Python里的split()，但是只能删除两旁空格，别的符号删不了，所以没参数
+
+        ```javascript
+        var str = "    abcde  fg   ";
+        console.log(str.trim()); // "abcde  fg"
+        ```
+
+      - toLowerCase、toUpperCase，只关心字符串里面的字母
+
+        ```javascript
+        var str = "1Ab";
+        console.log(str.toLowerCase()); // 1ab
+        console.log(str.toUpperCase()); // 1AB
+        ```
+
+27. 单体内置对象
+
+    单体内置对象指的是：由ECMAScript提供的、不依赖与宿主环境的对象，这些对象在程序员执行代码之前就已经存在了。如下：
+
+    1）Object
+
+    2）Global
+
+    3）Array
+
+    4）Date
+
+    5）Function
+
+    6）String
+
+    7）Math
+
+    8）Boolean
+
+    9）Number
+
+    等等...
+
+    上面说的这些都是对象，别看首字母大写，他们是**实打实**的对象，而不是模板。他们在代码执行前就已经存在了。
+
+    - Global对象：兜底对象，**除了null之外**，所有变量和函数都是局部的，不存在全局变量或全局函数这个概念。下面这些**原生构造函数**或**特殊值**（不包括null）都是Global对象的属性，如：
+
+      1）undefined
+
+      2）NaN
+
+      3）Date
+
+      4）String
+
+      5）Number
+
+      6）Boolean
+
+      7）Function
+
+      8）Object（是构造函数，也是对象，用typeof会返回"function"）
+
+      9）Array
+
+      10）Infinity
+
+      等等...
+
+      ```javascript
+      global = (() => {return this})();
+      global === window; // true
+      global.hasOwnProperty(NaN) // true
+      typeof global.Object == "function" // true
+      typeof Object; // "function"
+      ```
+
+      Global对象还有一些方法，如parseInt()、isNaN()等。
+
+      - URI编码方法：encodeURI()和encodeURIComponent()，前者传入完整URI但是不会处理特殊字符如#，后者一般传入URI的某一段，所有特殊字符都会处理。
+
+        ```javascript
+        var url = "https://talent.baidu.com/external/baidu/campus.html#/jobDetail/all/1/170111"
+        console.log(encodeURI(url)); // https://talent.baidu.com/external/baidu/campus.html#/jobDetail/all/1/170111
+        console.log(encodeURIComponent(url)); // https%3A%2F%2Ftalent.baidu.com%2Fexternal%2Fbaidu%2Fcampus.html%23%2FjobDetail%2Fall%2F1%2F170111
+        ```
+
+      - URI解码：decodeURI()和decodeURIComponent()，前者不会特殊字符转换后的字符进行解码，后者会。
+
+        ```javascript
+        var url = "https%3A%2F%2Ftalent.baidu.com%2Fexternal%2Fbaidu%2Fcampus.html%23%2FjobDetail%2Fall%2F1%2F170111"
+        console.log(decodeURI(url)); // https%3A%2F%2Ftalent.baidu.com%2Fexternal%2Fbaidu%2Fcampus.html%23%2FjobDetail%2Fall%2F1%2F170111
+        console.log(decodeURIComponent(url)); // https://talent.baidu.com/external/baidu/campus.html#/jobDetail/all/1/170111
+        ```
+
+      - eval()方法，执行传入字符串的代码
+
+        ```javascript
+        eval("console.log(\"I love you\")"); // I love you
+        ```
+
+    - Math对象
+
+      - max、min
+
+        ```javascript
+        console.log(Math.max(4, 2, 6, 8)); // 8
+        console.log(Math.min(4, 2, 6, 8)); // 2
+        ```
+
+      - ceil、round（四舍五入）、floor
+
+      - random()，返回(0, 1)之间随机数
+
+        从一个范围[*upperBounce*, *lowerBounce*]里面随机选一个值，公式如下：
+
+        return Math.floor(Math.random() * (*upperBounce* - *lowerBounce* + 1) + *lowerBounce*);
+
+        随机挑颜色代码：
+
+        ```javascript
+        function selectFrom(lowerBounce, upperBounce) {
+            return Math.floor(Math.random() * (upperBounce - lowerBounce + 1) + lowerBounce); 
+        }
+        var colorList = ["red", "black", "blue", "grey", "purple"];
+        console.log(colorList[selectFrom.call(this, 0, colorList.length)]);
+        ```
+
+        
