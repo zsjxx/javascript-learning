@@ -11,13 +11,19 @@ function addLoadEvent(func) {
     }
 }
 
+
 function displayAbbr() {
+    var findDeepestTextNode = (function findDeepestTextNode(node) {
+        if (node == null) return null;
+        if (node.nodeType == 3) return node.nodeValue;
+        else return findDeepestTextNode(node.firstChild);
+    });
     var abbr = document.getElementsByTagName("abbr");
     if (abbr.length == 0) return false;
     var arrrObj = new Object();
     for (var i = 0; i < abbr.length; i++) {
         var key = abbr[i].getAttribute("title");
-        var value = abbr[i].lastChild.nodeValue;
+        var value = findDeepestTextNode(abbr[i]);
         arrrObj[key] = value;
     }
     var abbrTitle = document.createElement("h2");

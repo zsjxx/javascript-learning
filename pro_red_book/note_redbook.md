@@ -1097,5 +1097,698 @@
         console.log(colorList[selectFrom.call(this, 0, colorList.length)]);
         ```
 
+
+28. 属性类型：属性类型分为两类，**数据属性**和**访问器属性**，每类属性都有四个**内部特性**。
+    - 数据属性：可以是实例属性、对象或者函数，含有以下四个内部特性：
+      - [[Configurable]]：表示能否通过delete删除该属性或者修改该属性的值。**一旦改为false，就不能改回true**。
+      - [[Enumerable]]：表示能否通过for-in循环返回属性
+      - [[Writable]]：表示能否修改属性的值
+      - [[Value]]：包含该属性的值
+    
+    - 访问器属性：也是一个属性，这个属性有四个特性，即：
+      - [[Configurable]]：表示能否通过delete删除该属性或者修改该属性的值。**一旦改为false，就不能改回true**。
+      - [[Enumerable]]：表示能否通过for-in循环返回属性
+      - [[Get]]：get方法，在读取时调用的函数，默认为undefined
+      - [[Set]]：set方法，在写入时调用的函数，默认为undefined
+    
+    - 查看内部属性的方法：Object.getOwnPropertyDescriptor(对象, 要查看的属性)
+    
+      ```javascript
+      var ob = {
+          name: "zsj",
+          sayHi: function() {
+              console.log("hi")
+          }
+      }
+      
+      var descriptorOfName = Object.getOwnPropertyDescriptor(ob, "name");
+      console.log(descriptorOfName.configurable); // true
+      ```
+    
+    - configurable如果为false，则不能改回true，不然报错，并且false的时候不能修改值、不能删也不能变成其他属性，不然直接无视。
+    
+    - 除非用Object.defineProperty()方法，不论是new的对象还是对象字面量创建的对象，其属性的前三个内部特性都是true，[[Value]]为实际值。
+    
+      ```javascript
+      var ob = {
+          name: "zsj",
+        sayHi: function() {
+              console.log("hi")
+          }
+      }
+      
+      var descriptorOfName = Object.getOwnPropertyDescriptor(ob, "name");
+      console.log(descriptorOfName.configurable); // true
+      console.log(descriptorOfName.enumerable); // true
+      console.log(descriptorOfName.writable); // true
+      console.log(descriptorOfName.value); // "zsj"
+      
+      var descriptorOfFuncion = Object.getOwnPropertyDescriptor(ob, "sayHi");
+      console.log(descriptorOfFuncion.configurable); // true
+      console.log(descriptorOfFuncion.enumerable); // true
+      console.log(descriptorOfFuncion.writable); // true
+      console.log(descriptorOfFuncion.value); // [Function: sayHi]
+      
+      // 哪怕不是在对象字面量里面创造的属性，他们的内部特性也是true
+      ob.age = 23;
+      var descriptorOfAge = Object.getOwnPropertyDescriptor(ob, "age");
+      console.log(descriptorOfAge.configurable); // true
+      console.log(descriptorOfAge.enumerable); // true
+      console.log(descriptorOfAge.writable); // true
+      console.log(descriptorOfAge.value); // 23
+      
+      ob = new Object();
+      ob.name = "zsj";
+      ob.sayHi = function() {
+                  console.log("hi")
+              }
+      
+      var descriptorOfName = Object.getOwnPropertyDescriptor(ob, "name");
+      console.log(descriptorOfName.configurable); // true
+      console.log(descriptorOfName.enumerable); // true
+      console.log(descriptorOfName.writable); // true
+      console.log(descriptorOfName.value); // "zsj"
+      
+      var descriptorOfFuncion = Object.getOwnPropertyDescriptor(ob, "sayHi");
+      console.log(descriptorOfFuncion.configurable); // true
+      console.log(descriptorOfFuncion.enumerable); // true
+      console.log(descriptorOfFuncion.writable); // true
+      console.log(descriptorOfFuncion.value); // [Function: sayHi]
+      
+      // 哪怕不是在对象字面量里面创造的属性，他们的内部特性也是true
+      ob.age = 23;
+      var descriptorOfAge = Object.getOwnPropertyDescriptor(ob, "age");
+      console.log(descriptorOfAge.configurable); // true
+      console.log(descriptorOfAge.enumerable); // true
+      console.log(descriptorOfAge.writable); // true
+      console.log(descriptorOfAge.value); // 23
+      ```
+      
+      用Object.defineProperty定义的属性，没有指定的值一律为false或者undefined（针对[[Value]]）。Object.defineProperty传入三个参数：对象名、属性名、内部特性/值键值对
+      
+      ```javascript
+      Object.defineProperty(ob, "height", {
+          value: 188
+      });
+      var descriptorOfHeight = Object.getOwnPropertyDescriptor(ob, "height");
+      console.log(descriptorOfHeight.configurable); // false
+      console.log(descriptorOfHeight.enumerable); // false
+      console.log(descriptorOfHeight.writable); // false
+      console.log(descriptorOfHeight.value); // 188
+      ```
+    
+    - 定义多个属性用Object.defineProperties()，传入两个参数，对象名和一个键值对列表，key为属性名，value为内部特性/值键值对。下面举了set和get方法的例子，set方法常用于**设置一个属性会导致其他属性发生变化**。
+    
+      ```javascript
+      var ob = new Object();
+      ob.stuList = [];
+      Object.defineProperties(ob, {
+          _name: {
+              configurable: true,
+              writable: true,
+              enumerable: true,
+              value: undefined
+          },
+          
+         name: {
+             get: function() {
+                 return "Hello, " + this._name + "!";
+             },
+             set: function(newValue) {
+                 this._name = newValue;
+                 this.stuList.push(newValue);
+             }
+         } 
+      });
+      ob.name = "zsj";
+      console.log(ob.stuList); // [ 'zsj' ]
+      ob.name = "zzz";
+      console.log(ob.stuList); // [ 'zsj', 'zzz' ]
+      console.log(ob.name); // Hello, zzz!
+      ```
+    
+    - 访问器属性只能用Object.defineProperties()或者Object.defineProperty()定义，并且未定义set函数的访问器属性会忽略写操作。
+    
+      ```javascript
+      var ob = {
+          _name: "zsj"
+      };
+      Object.defineProperty(ob, "name", {
+          get: function() {
+              return this._name;
+          }
+      })
+      ob.name = "a";
+      console.log(ob.name); // still "zsj", cuz set function is not defined
+      ```
+    
+    29. 工厂模式
+    
+        优先：弥补了对象字面量和Object构造函数的重复代码
+    
+        缺点：无法识别对象的类型
+    
+        ```javascript
+        function createPerson(name, age) {
+            var ob = new Object();
+            ob.name = name;
+            ob.age = age;
+            ob.sayName = function() {
+                console.log(this.name);
+            }
+            return ob;
+        }
+        
+        var instance = createPerson("zsj", 23);
+        instance.sayName(); // "zsj"
+        ```
+    
+    30. 构造函数模式
+    
+        优点：可以识别对象
+    
+        缺点：不能共享函数和静态变量
+    
+        ```javascript
+        function Person(name, age) {
+            this.name = name;
+            this.age= age;
+            this.sayName = function() {
+                console.log(this.name);
+            }
+        }
+        
+        var instance = new Person("zsj", 23);
+        instance.sayName(); // "zsj"
+        console.log(instance instanceof Person); // true
+        console.log(instance.constructor === Person); // true
+        ```
+    
+        - new的本质，new替我们做四件事
+    
+          1）创建一个临时对象，并将这个临时对象赋值给this，即this现在指向这个临时对象
+    
+          2）将这个临时对象的[[prototype]]内部指针指向父类即Person的prototype
+    
+          3）为这个临时对象添加属性，即执行构造函数中的代码（**永远在步骤二之后执行！**）
+    
+          4）返回这个临时对象
+    
+        - 为了深入理解new，深入理解构造函数中的代码永远在"临时对象的[[prototype]]内部指针指向父类"这件事之后执行。我们在构造函数中修改prototype，看看会发生什么。
+    
+          1）我们首先不使用对象字面量，此时this指向的prototype和执行代码中的prototype是同一片内存。new之后的prototype的constructor还是指向A，说明是**原生原型对象**。
+    
+          ```javascript
+          function A() {
+              A.prototype.name = "haha";
+          }
+          var ob = new A();
+          console.log(ob.name); // haha
+          var proto = Object.getPrototypeOf(ob);
+          console.log(proto); // A { name: 'haha' }
+          console.log(proto.constructor === A); // true
+          ```
+    
+          2）接着我们用对象字面量去修改prototype，此时的prototype会被指向另一篇内存，但是我们看看new出来的对象的[[prototype]]到底指向的是老的还是新的呢？（答案是老的）。下面的代码说明了，我在new的时候，这个临时对象this的[[prototype]]是**先**指向老的prototype（从constructor === B 为true）可以得证；**然后**B的原型对象改了，所以这是有顺序的。即在new返回对象之后，我的对象虽然指向了老prototype，但是B的prototype已经更换。
+    
+          ```javascript
+          function B() {
+              B.prototype = {
+                  name: "haha"
+              };
+          }
+          var ob = new B();
+          console.log(ob.name); // undefined
+          var proto = Object.getPrototypeOf(ob);
+          console.log(proto); // B {}
+          console.log(proto.constructor === B); // true
+          ```
+    
+          不信？看下面一段代码，我们接着调用new，看看第二次调用new得到的对象的[[prototype]]指向的是谁。下面的代码说明了第二次new的对象的[[prototype]]指向的是第一次生成的新的原型对象，但是很不幸，每调用一次构造函数，B的原型对象就会更新一次（本质为换一次内存），所以不建议这么玩哈。
+    
+          ```javascript
+          var ob2 = new B();
+          var ob2 = new B();
+          console.log(ob2.name); // "haha"
+          var proto = Object.getPrototypeOf(ob2);
+          console.log(proto); // { name: 'haha' }
+          console.log(proto.constructor === B); // false
+          ```
+    
+          3）所以原则就是：永远在构造函数外部修改prototype；永远在new之前修改prototype
+    
+        - 使用call可以使构造函数在别的作用域中调用。**这个很有用**，后面在**组合继承**中，我们通过构造函数的模式来继承父类的实例属性，为此我们需要在子类的构造函数中调用父类的构造函数，并将作用域设成子类构造函数的this。
+    
+          ```javascript
+          var ob = new Object();
+          Person.call(ob, "hj", 24);
+          ob.sayName(); // "hj"
+          ```
+    
+    31. 原型模式
+    
+        优点：函数和实例可以共享
+    
+        缺点：1）引用类型的实例属性会强制共享；2）所有的实例在默认情况下都具有相同的值，因为不能用自己的参数初始化实例。
+    
+        ```javascript
+        function Person() {}
+        
+        Person.prototype.name = "zsj";
+        Person.prototype.age = 23;
+        Person.prototype.sayName = function() {
+            console.log(this.name);
+        }
+        
+        var instance = new Person();
+        instance.sayName(); // "zsj"
+        console.log(instance instanceof Person); // true
+        console.log(Person.prototype.isPrototypeOf(instance)); // true
+        ```
+    
+        - 查看对象的原型，用Object.getPrototypeOf(对象)
+    
+          ```javascript
+          console.log(Object.getPrototypeOf(instance)); // Person { name: 'zsj', age: 23, sayName: [Function] }
+          console.log(Object.getPrototypeOf(instance) === Person.prototype); // true
+          ```
+    
+        - 1）constructor，这是个棘手的属性。记住，每当定义一个函数，或者是已经存在的原生构造函数，那么这些函数都会有一个对应的原型对象，这个原型对象初始时只有一个属性，那就是constructor，是个指针，指向函数本身。我们姑且叫这个原型对象为**原生原型对象**（我自己起的哈），**constructor**只存在于原生原型对象里，所以我们自己创建的实例或者用面向字面量创建的prototype都是不含constructor的，他们的constructor只能顺着原型链往上找！上面的例子中，instance本身没有constructor，所以它的constructor一定是Person.prototype的constructor，指向Person本身。
+    
+          2）我们规定，实例本身拥有的属性叫实例属性，不在实例中但在其指向的原型中的属性称作原型属性。
+    
+          3）对象.hasOwnProperty(属性名)这个函数可以检测属性到底是在实例中还是在其上部的原型链上。下面的代码说明了，instance的constructor是原型属性，而不是实例属性。
+    
+          ```javascript
+          console.log(instance.constructor === Person); // true
+          console.log(instance.hasOwnProperty("constructor")); // false
+          console.log(Person.prototype.hasOwnProperty("constructor")); // true
+          ```
+    
+        - 实例如果重复定义了与原型的同名变量或**函数**，会**覆盖**原型的定义，但是**不会修改**。这里比较难的是如何判断我们的操作是重新定义还是修改，这么想，不论是属性名还是函数名，都只是一个指针，我如果用等号重新赋值，相当于改变了指针的指向，原来指针指向的内存内容并没有被修改。但是，如果我没有用等号赋值，说明我们并没有改变指针的指向，指针仍指向原型属性对应的那片内存，我们若修改内存，那么原型属性也会被修改。最常见的例子就是如果原型属性是引用类型的比如Array，我们对this.arr进行push操作，那么这个操作会对原型实例内存中的值进行修改，进而影响到所有子类实例。所以这就是原型模式很少单独使用的原因！
+    
+          ```javascript
+          instance.name = "buaa";
+          instance.sayName(); // "buaa"
+          instance.name = null;
+          instance.sayName(); // null
+          delete instance.name;
+          instance.sayName(); // "zsj"
+          
+          instance.sayName = function() {
+              console.log("hah");
+          };
+          instance.sayName(); // "hah"
+          instance.sayName = null;;
+          if (instance.sayName) {
+              instance.sayName(); // not executed
+          }
+          delete instance.sayName;
+          instance.sayName(); // "zsj"
+          ```
+    
+        - in操作、Object.keys()以及Object.getOwnPropertyNames()
+    
+          - in操作返回布尔值，判断某个属性是否是对象的实例属性或者原型属性，只要在原型链上就行
+    
+            ```javascript
+            function Person() {}
+            Person.prototype.name = "zsj";
+            var ob = new Person();
+            ob.age = 23;
+            console.log("name" in ob); // true
+            console.log("age" in ob); // true
+            ```
+    
+          - Object.keys()返回一个Array数组，装的是某个对象上的**可枚举的实例属性**，不能是原型属性
+    
+            ```javascript
+            // Object.keys() returns an array whose elements are strings
+            // corresponding to the enumerable properties found directly upon object
+            keys = Object.keys(ob);
+            console.log(keys); // [ 'age' ]
+            console.log(Array.isArray(keys)); // true
+            ```
+    
+          - Object.getOwnPropertyNames()返回一个Array，装的是某个对象上**所有实例属性**，不论可不可枚举，不能是原型属性
+    
+            ```javascript
+            // returns an array of all properties (including non-enumerable
+            // properties except for those which use Symbol) found directly in a given object.
+            keys = Object.getOwnPropertyNames(ob);
+            console.log(keys); // [ 'age' ]
+            console.log(Array.isArray(keys)); // true
+            
+            keys = Object.getOwnPropertyNames(Person.prototype);
+            console.log(keys); // [ 'constructor', 'name' ]
+            ```
+    
+          - 判断是否是实例属性
+    
+            ```javascript
+            function isInstanceAttribute(object, name) {
+                return name in object && object.hasOwnProperty(name);
+            }
+            
+            console.log(isInstanceAttribute(ob, "name")); // false
+            console.log(isInstanceAttribute(ob, "age")); // true
+            ```
+    
+        - 用对象字面量创建原型
+    
+          1）注意如果用对象字面量创建原型的时候，constructor需要重新**用Object.defineProperty()**指定，因为相当于对另一片内存空间进行了修改，原来的内存空间不再被引用。但是constructor的[[enumerable]]默认为false，你用对象字面量会让他变成true，所以用Object.defineProperty指定一下。
+    
+          2）一定要**先**用对象字面量，**再**创建对象！确保对象的[[prototype]]指向的一定是最新的原型对象。
+    
+        - 原生对象的原型属性，比如我们的hasOwnProperty()就是Object构造函数的原型对象里面的。
+    
+          ```javascript
+          console.log(typeof Object.prototype.hasOwnProperty === "function"); // true
+          ```
+    
+        - 判断一个对象有没有函数，用typeof，有没有某个属性，用hasOwnProperty（实例属性）或者in（只要在原型链上）
+    
+        - 原型模式缺点：对于引用类型的原型属性会强制共享，这个没啥好说的，学过C语言指针的都很好理解
+    
+          ```javascript
+          function Color() {}
+          Color.prototype.arr = ["pink"];
+          var ob1 = new Color();
+          ob1.arr.push("red");
+          var ob2 = new Color();
+          console.log(ob2.arr); // [ 'pink', 'red' ]
+          ```
+    
+    32. 结合**构造函数模式**和**原型模式**（坠吼的面向对象模式）
+    
+        确保只在第一次创建对象时构造原型对象中的函数，所以用typeof来进行判断，判断该函数是否存在。
+    
+        ```javascript
+        function Person(name, age) {
+            this.name = name;
+            this.age = age;
+            if (typeof Person.prototype.sayName !== "function") {
+                Person.prototype.sayName = function() {
+                    console.log(this.name);
+                }
+            }
+        }
+        
+        var ob = new Person("zsj", 23);
+        ob.sayName(); // "zsj"
+        ```
+    
+    
+    33. 组合继承
+    
+        要点：
+    
+        1）prototype永远在构造函数外部设置，并且要在new之前设置
+    
+        2）函数的设置可以在构造函数里面设置，不过要用typeof来确保只在第一次
+    
+        缺点：必定会调用两次父类的构造函数，并且完全没必要让父类的一个实例当做子类的原型对象，因为我们只想让原型对象存函数和静态变量，但是这样做会让子类的原型对象包含父类的实例属性，然而我却用不到，用的还是通过构造函数模式得到的实例属性，造成了内存浪费！
+    
+        ```javascript
+        function Dad(name, age) {
+            this.name = name;
+            this.age = age;
+            if (typeof Dad.prototype.sayName !== "function") {
+                Dad.prototype.sayName = function() {
+                    console.log(this.name);
+                };
+                console.log("Dad: This is my first but the last output");
+            }
+        }
+        
+        function Son(name, age, sex) {
+            // 第二次调用构造函数
+            Dad.call(this, name, age);
+            this.sex = sex;
+            if (typeof Son.prototype.saySex !== "function") {
+                Son.prototype.saySex = function() {
+                    console.log(this.sex);
+                };
+                console.log("Son: This is my first but the last output");
+            }
+        }
+        
+        // 第一次调用构造函数
+        Son.prototype = new Dad(); // Dad: This is my first but the last output
+        console.log("####"); // ####
+        
+        // 虽然在new Son的时候也会第二次调用父类，但是父类原型内部的函数已经构造完毕了，没必要再创建一遍咯
+        // 这里只用构造子类的内部函数即可
+        var son = new Son("zsj", 23, "male"); // Son: This is my first but the last output
+        son.sayName(); // "zsj"
+        son.saySex(); // "male"
+        
+        var son2 = new Son("zzz", 26, "female");
+        son2.sayName(); // "zzz"
+        son2.saySex(); // "female"
+        ```
+    
+    34. 寄生组合式继承——终极方法
+    
+        换掉一行即可，将`Son.prototype = new Dad();`换成`Son.prototype = Object.create(Dad.prototype);`。Object.create(父类的原型对象)返回一个对象，这个对象的原型是父类的原型对象，确保不含任何实例属性。
+    
+        ```javascript
+        function Dad(name, age) {
+            this.name = name;
+            this.age = age;
+            if (typeof Dad.prototype.sayName !== "function") {
+                Dad.prototype.sayName = function() {
+                    console.log(this.name);
+                };
+                console.log("Dad: This is my first but the last output");
+            }
+        }
+        
+        function Son(name, age, sex) {
+            Dad.call(this, name, age);
+            this.sex = sex;
+            if (typeof Son.prototype.saySex !== "function") {
+                Son.prototype.saySex = function() {
+                    console.log(this.sex);
+                };
+                console.log("Son: This is my first but the last output");
+            }
+        }
+        
+        // 避免了调用父类的构造函数
+        Son.prototype = Object.create(Dad.prototype);
+        
+        console.log("####"); // ####
+        
+        // 子类调用的过程中，只调用一次父类的构造函数
+        var son = new Son("zsj", 23, "male"); // Dad: This is my first but the last output; Son: This is my first but the last output
+        son.sayName(); // "zsj"
+        son.saySex(); // "male"
+        
+        var son2 = new Son("zzz", 26, "female");
+        son2.sayName(); // "zzz"
+        son2.saySex(); // "female"
+        ```
+    
+    35. 原型属性分别是基本类型和引用类型时，当某个对象修改，另一个对象会受到影响吗？
+    
+        先说结论：只有一种情况，某个对象对原型属性的修改会影响到别的对象，那就是对引用类型指向的内存内容进行修改，即上面提到的对数组进行push操作。注意，任何利用等号的赋值操作都只是重新定义同名的实例属性，覆盖了父类的原型属性，并没有修改父类实例属性内存中的内容。我们来看三个例子，下面三个例子都不会影响别的对象。
+    
+        1）基本类型，利用赋值语句
+    
+        ```javascript
+        function A() {}
+        A.prototype.age = 23;
+        
+        var ob1 = new A();
+        var ob2 = new A();
+        ob1.age = 25; // ob1的age已经变成了实例属性而不是原型属性
+        console.log(ob1.age); // 25
+        console.log(ob2.age); // 23
+        console.log(ob1.age === A.prototype.age); // false
+        console.log(ob2.age === A.prototype.age); // true，ob2的age仍然是原型属性
+        ```
+    
+        2）对数值类型进行++，本质还是赋值
+    
+        ```javascript
+        function A() {}
+        A.prototype.age = 23;
+        
+        var ob1 = new A();
+        var ob2 = new A();
+        // 哪怕是++，也相当于先+1，再赋值，还是相当于定义了自己的实例属性
+        ob1.age++; // ob1的age已经变成了实例属性而不是原型属性
+        console.log(ob1.age); // 24
+        console.log(ob2.age); // 23
+        console.log(ob1.age === A.prototype.age); // false
+        console.log(ob2.age === A.prototype.age); // true，ob2的age仍然是原型属性
+        ```
+    
+        3）引用类型，但是不修改内存中的值，而是通过等号改变指针
+    
+        ```javascript
+        function A() {}
+        A.prototype.arr = [1, 2, 3];
+        
+        var ob1 = new A();
+        var ob2 = new A();
+        ob1.arr = ["ha"];
+        console.log(ob1.arr); // [ 'ha' ]
+        console.log(ob2.arr); // [ 1, 2, 3 ]
+        console.log(ob1.arr === A.prototype.arr); // false
+        console.log(ob2.arr === A.prototype.arr); // true
+        ```
+    
+    36. 正确的递归方式——利用**命名函数表达式**，记得加括号鸭！
+    
+        ```javascript
+        var factorial = (function f(num) {
+            if (num < 2) return 1;
+            return f(num - 1) * num;
+        });
+        
+        console.log(factorial(5)); // 120
+        
+        var factorial2 = factorial;
+        factorial = null;
+        console.log(factorial2(3)); // 6
+        ```
+    
+    37. 闭包：闭包是有权访问另一个函数作用域中的变量的**函数**，本质是函数！
+    
+        1）对于每个函数或者闭包，都对应一个**执行环境**，每个环境对应一个**作用域链**，作用域链在函数内部用一个特殊的符号[[scope]]表示。作用域链的本质是**指针数组**，每个位置指向不同的**变量对象**（包含window对象和活动对象），变量对象包含this、arguments（实参）和其他命名参数（形参）。
+    
+        2）变量对象有很多个，其实是有优先级的。优先级最高的是最内层函数所在执行环境对应的活动对象，其次是次外层，优先级逐层递减。
+    
+        3）一般来说，活动对象会随执行环境的弹栈而被销毁。对于普通函数，当函数执行完毕，局部活动对象就会被销毁。然而对于闭包来说不一定，如果将闭包作为匿名函数，并且作为外层函数的返回值，那么除非销毁这个匿名闭包，不然这个闭包会一直持有其外层函数的活动对象。
+    
+        4）创建函数/将闭包作为返回值返回时，此时函数/闭包的作用域链的**初始值**为除自身外所有外层的变量对象；在调用该函数或者将返回的闭包返回给某一个变量时，会在函数/闭包的作用域链的前端插入当前函数/闭包的变量对象。
+    
+        5）闭包会携带包含它函数的作用域，所以会比其他函数更占内存。
+    
+        ```javascript
+        function createAge(age) {
+            return function() {
+                console.log(age * age);
+            };
+        } 
+        
+        var getAgeSquare = createAge(5); // 执行完后createAge的执行环境被销毁了，但是createAge的活动对象还没被销毁
+        getAgeSquare(); // 25
+        getAgeSquare = null; // 现在createAge的活动对象才会被销毁
+        ```
+    
+    38. 闭包只能取得包含函数中任何变量的最后一次值，所以，对于变化的值，尽量采用传参的方式来解决。
+    
+        1）先看个例子。i是外部函数createFuncitons的活动对象之一，所有闭包共享这一个变量对象i的最后一个值就是5，所以每个闭包里面的i都被更新为5。本质原因是因为，闭包中的i和外部的i是一起变化的，闭包中的i指向外部的i，所以外部变了，里面也跟着变。要想解决这个问题，可以用传参的方式来避免内外联动。
+    
+        ```javascript
+        function createFunctions(num) {
+            var ans = new Array(num);
+            for (var i = 0; i < num; i++) {
+                ans[i] = function() {
+                    return i;
+                }
+            }
+            return ans;
+        }
+        
+        var ans = createFunctions(5);
+        for (var i = 0; i < 5; i++) {
+            console.log(ans[i]());
+        } // 5 5 5 5 5
+        ```
+    
+        2）解决方式，通过传参的方式，传给一个函数，这个函数为一个匿名函数，并立即执行，即返回最终的函数。
+    
+        ```javascript
+        function createFunctions(num) {
+            var ans = new Array(num);
+            for (var i = 0; i < num; i++) {
+                ans[i] = function(number) {
+                    return function() {
+                        return number;
+                    }
+                }(i);
+            }
+            return ans;
+        }
+        
+        var ans = createFunctions(5);
+        for (var i = 0; i < 5; i++) {
+            console.log(ans[i]());
+        } // 0, 1, 2, 3, 4
+        ```
+    
+        3）注意区分**命名函数表达式**和**匿名函数并立即执行**。前者**最好**对整体加上大括号，表示是这个函数的整体是一个变量；后者在匿名函数后面加上()表示立即调用。
+    
+        ```javascript
+        var factorial = (function f(num) {
+            if (num < 2) return 1;
+            return f(num - 1) * num;
+        });
+        
+        console.log(function(num) {
+            return num;
+        }(10)); // 10
+        
+        console.log(factorial(6)); // 720
+        ```
+    
+        4）命名函数和匿名函数都可以加括号立即执行，不过最好都为function整体部分加上括号，不然会报错。
+    
+        ```javascript
+        (function fun() {
+           console.log("haha");
+        })(); // "haha"
+        
+        (function() {
+           console.log("haha");
+        })(); // "haha"
+        ```
+    
+    39. 闭包的this永远指向global
+    
+        ```javascript
+        // 下面的代码需要在浏览器中执行
+        global = (() => {return this;})();
+        (function() {
+            var that = this;
+            return function() {
+                console.log(this === global); // true
+                console.log(this === that); // true
+                console.log(global === that); // true
+            };
+        })()();
+        
+        var name = "zsj";
+        var ob = {
+            name: "haha",
+            getNameFunction: function() {
+                return function() {
+                    console.log(this.name);
+                };
+            }
+        };
+        
+        ob.getNameFunction()(); // "zsj"
+        ```
+    
+    40. 模仿**块级作用域**
+    
+        1）js没有块级作用域的概念，但是块级作用域很有用，因为当块级作用域执行完毕后就会被销毁，比闭包要省内存。而且很多时候我们只需要一些临时变量，比如循环语句的时候。
+    
+        2）块级作用域的语法就是之前提到的，将匿名函数用小括号括起来然后再加上小括号表示立即执行。
+    
+        ```javascript
+        (function() {
+            for (var i = 0; i < 10; i++) {
+                console.log(i);
+            }
+        })();
+        console.log(i); // 报错
+        ```
+    
         
 
