@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <div id="result"></div>
+        <script>
+            if (typeof Storage) {
+                localStorage.setItem("lastname", "Zhou");
+                document.getElementById("result").innerHTML = localStorage.getItem("lastname");
+                // localStorage.removeItem("lastname");
+                document.getElementById("result").innerHTML = localStorage.getItem("lastname");
+            }
+        </script>
+    </body>
+</html>

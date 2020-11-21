@@ -1,0 +1,63 @@
+new 一个对象 js做了那些事
+var a = {}
+a.__proto__ === Object.prototype
+Object.prototype.__proto__ === Object.prototype //Function.prototype （都不对，应该是null）
+
+function b(){
+  this.say = ()=>{
+        console.log(2)
+    }
+}
+b.__proto__  ===  Function.prototype
+Function.prototype.__proto__ === Object.prototype
+b.prototype.say = ()=>{
+    console.log(1)
+}
+var c = new b()
+c.__proto__ === b.prototype
+c.say = ()=>{
+    console.log(3)
+}
+c.say() // 3?
+
+console.log ('1'）
+setTimeout(function{
+  console.log('2')
+}, 0)
+
+new Promise(resolve => {
+  console.log('3')
+  resolve()
+  console.log('4')；
+
+})
+.then（ function() {
+  console.log('5')
+})
+.then(function() {
+  console.log('6')
+})
+console.log('7')；
+
+setTimeout(() => {
+
+  console.log('timer1')
+
+  Promise.resolve().then(function（） {
+    console.log('promise1')
+  })
+
+}, 0)//settimeout1 
+
+setTimeout(() => {
+
+  console.log('timer2')
+
+  Promise.resolve().then(function() {
+    console.log('promise2')
+  })
+
+}, 0)//settimeout2
+
+
+timer1 promise1 timer2  promise2

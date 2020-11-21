@@ -1,0 +1,12 @@
+<!-- 1. 为了在所有移动端和PC端进行适配，我们需要在meta上定义viewport，并将内容设定为<meta name="viewport" content="width=device-width, initial-scale=1.0">
+2. 对于图片，最好将图片的max-width:100%;height:auto，因为如果缩小的话还能缩小，不能写死了。
+3. <picture>标签可以在不同分辨率的设备上显示不同的标签，如下，最后要有个img兜底
+<picture>
+    <source srcset="img_smallflower.jpg" media="(max-width: 600px)">
+    <source srcset="img_flowers.jpg" media="(max-width: 1500px)">
+    <source srcset="flowers.jpg">
+    <img src="img_smallflower.jpg" alt="Flowers">
+</picture>
+4. 对于文字，是默认缩放的，如果不想缩放可以对font-size用vw格式，如下，其中 1vw = 1% of viewport width
+<p style="font-size:5vw;">Resize the browser window to see how the text size scales.</p>
+5. 待续 -->

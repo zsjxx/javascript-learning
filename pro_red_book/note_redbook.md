@@ -361,8 +361,8 @@
       console.log(str.toString()); // haha
       console.log(obj.toString()); // [object Object]
       console.log(boo.toString()); // "true"
-      console.log(String(nul)); // "null"
-      console.log(String(undef)); // "undefined"
+      console.log(String(null)); // "null"
+      console.log(String(undefined)); // "undefined"
       console.log(arr.toString); // [Function: toString]
       console.log(Object.prototype.toString.call(arr)); // [object Array] this is what we want
       ```
@@ -1790,5 +1790,98 @@
         console.log(i); // 报错
         ```
     
+    
+    41. 静态私有变量
+    
+        1）静态私有变量指的是所有实例都可以共享的静态变量，不同于将实例放在原型中，这里说的是私有的，即无法通过直接获取变量，而必须通过**特权函数**才能获取。
+    
+        2）特权函数指的是 有权访问私有变量和私有函数的公有方法。
+    
+        3）主要思路：在块级作用域中定义私有变量和函数；定义全局的构造函数表达式（即不加var，且用函数表达式的形式）；为构造函数的原型定义特权方法。
+    
+        4）缺点：不加var会报错（严格模式下）
+    
+        5）Javascript没有私有成员的概念，但是有私有变量的概念。所有的对象属性都是共有的，但是，一般可以认为在函数中定义的变量叫做**私有变量**，因为不能在函数的外部访问到它们。私有变量包括：参数、局部变量和函数内部定义的其他函数（即闭包）。
+    
+        ```javascript
+        (function() {
+            var name = "";
+            Person = function(value) {name = value};
+            Person.prototype.getName = function() {
+                return name;
+            };
+            Person.prototype.setName = function(newName) {
+                name = newName;
+            }
+        })();
         
-
+        var ob1 = new Person("zsj");
+        console.log(ob1.getName()); // "zsj"
+        var ob2 = new Person("aaa");
+        console.log(ob1.getName()); // "aaa"
+        console.log(ob2.getName()); // "aaa"
+        ```
+    
+    42. 模块模式——为单例创建私有变量和特权方法
+    
+        核心思路：
+    
+        1）块级作用域本质是一个匿名函数并立即执行，因此可以有返回值
+    
+        2）在块级作用域里面定义好私有变量和私有函数，返回一个匿名的对象字面量去调用他
+    
+        - 不需要指定类型的单例，即类型为Object
+    
+          ```javascript
+          var singleton = (function() {
+              // define private variable
+              var name = "";
+              var privateFunction = function(newName) {
+                  console.log("name has been changed! from %s to %s", name, newName);
+              }
+          
+              return {
+                  getName: function() {
+                      return name;
+                  },
+                  setName: function(newName) {
+                      privateFunction(newName);
+                      name = newName;
+                  }
+              }
+          })();
+          
+          singleton.setName("zsj"); // name has been changed! from  to zsj
+          singleton.setName("hehe"); // name has been changed! from zsj to hehe
+          console.log(singleton instanceof Object); // true
+          ```
+    
+        - 需要指定类型的单例，很简单，在内部不是返回对象字面量，而是返回指定类型的变量即可。
+    
+          ```javascript
+          function Person() {}
+          var singleton = (function() {
+              // define private variable
+              var name = "";
+              var privateFunction = function(newName) {
+                  console.log("name has been changed! from %s to %s", name, newName);
+              }
+          
+              var ob = new Person();
+              ob.getName = function() {
+                  return name;
+              };
+              ob.setName = function(newName) {
+                  privateFunction(newName);
+                  name = newName;
+              };
+              return ob;
+          })();
+          
+          singleton.setName("zsj"); // name has been changed! from  to zsj
+          singleton.setName("hehe"); // name has been changed! from zsj to hehe
+          console.log(singleton instanceof Object); // true
+          console.log(singleton instanceof Person); // true
+          ```
+    
+          

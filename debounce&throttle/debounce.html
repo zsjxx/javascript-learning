@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <input type="text" id="debounce"><br /><br />
+        <input type="button" id="throttle" value="click me"><br />
+        <script>
+            let timer;
+            let last;
+            function show(content) {
+                console.log(content);
+            }
+
+            function debounce(callback, delay) {
+                return function(content) {
+                    if (timer !== undefined) {
+                        clearTimeout(timer);
+                    }
+                    timer = setTimeout(() => {
+                        callback.call(this, content);
+                    }, delay);
+                }
+            }
+
+            function throttle(callback, maxInterval) {
+                return function(content) {
+                    if (last === undefined || last + maxInterval < (new Date).valueOf()) {
+                        last = (new Date).valueOf();
+                        callback.call(this, content);
+                    }
+                }
+            }
+
+            document.getElementById("debounce").addEventListener("keyup", (event) => {
+                debounce(show, 1000)(event.target.value);
+            });
+
+            document.getElementById("throttle").addEventListener("click", (event) => {
+                throttle(show, 1000)(event.target.value);
+            });
+        </script>
+    </body>
+</html>

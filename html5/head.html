@@ -1,0 +1,18 @@
+<!-- meta信息展示了页面描述、字符集、关键字、文档的作者以及关于窗口的一些设定
+通常来说，meta属性主要包含三大部分，name、http-equiv以及charset。
+name和http-equiv都需要在后面接上content来表示具体的内容。
+name提供文档级别的元信息，服务于整个文档；http-equiv可以定义部分特殊的http报文的首部
+这些首部并不在真正的http首部中，除了content-type
+可以定义的首部主要有：refresh、content-type、default-style等 -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="keywords" content="HTML, CSS">
+        <meta name="description" content="Free Web tutorial">
+        <meta http-equiv="refresh" content="3"> <!-- 刷新的单位是秒 -->
+        <!-- viewpoint常用于窗口大小在不同设备上的适配 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- base用于指定所有相对url的基，只允许定义一次 -->
+        <base href="https:www.baidu.com" target="_blank">
+    </head>
+</html>

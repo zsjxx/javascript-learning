@@ -95,9 +95,72 @@
 
 // ob.getNameFunction()(); // "zsj"
 
-(function() {
-    for (var i = 0; i < 10; i++) {
-        console.log(i);
+// (function() {
+//     for (var i = 0; i < 10; i++) {
+//         console.log(i);
+//     }
+// })();
+// console.log(i); // 报错
+
+// (function() {
+//     var name = "";
+//     Person = function(value) {name = value};
+//     Person.prototype.getName = function() {
+//         return name;
+//     };
+//     Person.prototype.setName = function(newName) {
+//         name = newName;
+//     }
+// })();
+
+// var ob1 = new Person("zsj");
+// console.log(ob1.getName()); // "zsj"
+// var ob2 = new Person("aaa");
+// console.log(ob1.getName()); // "aaa"
+// console.log(ob2.getName()); // "aaa"
+
+// var singleton = (function() {
+//     // define private variable
+//     var name = "";
+//     var privateFunction = function(newName) {
+//         console.log("name has been changed! from %s to %s", name, newName);
+//     }
+
+//     return {
+//         getName: function() {
+//             return name;
+//         },
+//         setName: function(newName) {
+//             privateFunction(newName);
+//             name = newName;
+//         }
+//     }
+// })();
+
+// singleton.setName("zsj"); // name has been changed! from  to zsj
+// singleton.setName("hehe"); // name has been changed! from zsj to hehe
+// console.log(singleton instanceof Object); // true
+
+function Person() {}
+var singleton = (function() {
+    // define private variable
+    var name = "";
+    var privateFunction = function(newName) {
+        console.log("name has been changed! from %s to %s", name, newName);
     }
+
+    var ob = new Person();
+    ob.getName = function() {
+        return name;
+    };
+    ob.setName = function(newName) {
+        privateFunction(newName);
+        name = newName;
+    };
+    return ob;
 })();
-console.log(i); // 报错
+
+singleton.setName("zsj"); // name has been changed! from  to zsj
+singleton.setName("hehe"); // name has been changed! from zsj to hehe
+console.log(singleton instanceof Object); // true
+console.log(singleton instanceof Person); // true

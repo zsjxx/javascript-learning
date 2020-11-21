@@ -1,0 +1,17 @@
+.outside {
+    background-color: sandybrown;
+    width: 600px;
+    height: 600px;
+}
+
+.middle {
+    background-color: salmon;
+    width: 50%;
+    height: 50%;
+}
+
+.inside {
+    background-color: gray;
+    width: 50%;
+    height: 50%;
+}

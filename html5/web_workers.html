@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <p>This moment the number is <span id="demo"></span></p>
+        <input type="button" onclick="start()" value="start"><br />
+        <input type="button" onclick="terminate()" value="terminate">
+        <script>
+            function start() {
+                let a = 1;
+                let b = 2;
+                const numberSpan = document.getElementById("demo");
+                if (window.Worker) {
+                    let myWorker = new Worker("workers.js");
+                    if (!myWorker) {
+                        console.log(111111);
+                    }
+                    // myWorker.postMessage([a, b]);
+                    myWorker.onmessage = function(event) {
+                        numberSpan.innerHTML = event.data[1].toString();
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>

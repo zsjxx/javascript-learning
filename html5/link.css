@@ -1,0 +1,43 @@
+body {
+    background-image: url(cat.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+#baidu {
+    font-size: 30px;
+}
+
+#baidu:link {
+    color:green;
+    text-decoration: none;
+}
+
+#baidu:visited {
+    color:purple;
+    text-decoration: none;
+}
+
+#baidu:hover {
+    color: red;
+    text-decoration: none;
+}
+
+#baidu:active {
+    color:yellow;
+    text-decoration: none;
+}
+
+#sina:link, #sina:visited {
+    background-color:blue;
+    color: white;
+    padding: 15px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#sina:hover, #sina:active {
+    background-color: violet;
+}

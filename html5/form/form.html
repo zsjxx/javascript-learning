@@ -1,0 +1,32 @@
+<!-- 
+    1. label常用于form中，将自己和input绑定起来，label的for必须和要绑定的input的id一致
+    2.  
+-->
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <form>
+            <label for="name">Name:</label><br />
+            <input type="text" id="name" name="name" required><br />
+            <input type="radio" id="male" name="gender" value="male" checked>
+            <label for="male">Male</label><br />
+            <input type="radio" id="female" name="gender" value="female">
+            <label for="female">Female</label><br />
+            <label for="math">Math</label>
+            <input type="checkbox" class="subject" name="subject" value="math"><br />
+            <label for="geography">Geography</label>
+            <input type="checkbox" class="subject" name="subject" value="geography"><br />
+            <input type="button" value="click me!" id="button"><br />
+            <!-- <video width="50%" height=auto controls>
+                <source src="video.mp4" type="video/mp4">
+                NO!!
+            </video> -->
+            <audio controls>
+                <source src="audio.mp3" type="audio/mp3">
+                NO!
+            </audio>
+        </form>
+        <script src="form.js"></script>
+    </body>
+</html>

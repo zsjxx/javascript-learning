@@ -1,0 +1,1 @@
+// fetch基于promise

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <p id="location"></p>
+        <input type="button" onclick="getLocation()" value="Click me!">
+        <script>
+            function getLocation() {
+                var pNode = document.getElementById("location");
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        pNode.innerHTML = position.coords.latitude.toString() + " " + position.coords.longitude.toString() + "<br />";
+                    });
+                } else {
+                    pNode.innerHTML = "NO!";
+                }
+            }
+        </script>
+    </body>
+</html>
